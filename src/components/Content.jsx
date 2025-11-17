@@ -89,7 +89,7 @@ export default function Content(){
 	return(
 		<div className="container">
 			<div className="row mt-4">
-				<img className="logo-bg" src="/public/logomanic.png" alt="" aria-hidden="true" />
+				<img className="logo-bg" src="/logomanic.png" alt="" aria-hidden="true" />
 				<div className="col-8 main-content">
 					{/* pass onChange to receive hasil grup and pass excludeArr */}
 					<GrupContainer
