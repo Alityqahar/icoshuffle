@@ -101,7 +101,7 @@ export default function Content(){
 					/>
 				</div>
 				<div className="col-4 ">
-					<div className="input-form shadow rounded p-3">
+					<div className="input-form shadow">
 						<h2 className="text-center">INPUT</h2>
 						<div className="row g-2">
 							<div className="col-6">
