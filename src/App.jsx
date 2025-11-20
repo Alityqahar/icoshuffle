@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from '@vercel/analytics/react';
 
 // ============ STYLES ============
 const styles = `
@@ -938,6 +938,7 @@ export default function App() {
       <ClickSpark sparkColor='#02367B' sparkSize={10} sparkRadius={15} sparkCount={8} duration={400}>
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
           <Navbar />
+          <Analytics /> 
           
           {!showContent ? (
             <Hero onStart={() => setShowContent(true)} />
