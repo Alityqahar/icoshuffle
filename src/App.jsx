@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Analytics } from "@vercel/analytics/next"
 
 // ============ STYLES ============
 const styles = `
