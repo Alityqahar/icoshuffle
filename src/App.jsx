@@ -560,8 +560,37 @@ const Hero = ({ onStart }) => {
   );
 };
 
+// ======= DATA ABSEN PER KELAS =======
+const daftarKelas = {
+  '12.1': [
+    "Adel", "Adib", "Faidzul", "Albania", "Arini", "Dina", "Fawaaz", "Galang", "Hala", "Ikhtiara",
+    "Lovely", "Chikal", "Nadhif", "Daffa", "Marsa", "Medina", "Nasyida", "Naura", "Nayla", "Raihana",
+    "Rania", "Syifa", "Zafira"
+  ],
+  '12.2': [
+    "Alifah", "Nabilah", "Amirah", "Fairuz", "Fakhri", "Farras", "Hanna", "Hasna", "Ichsan", "Izza",
+    "Kirana", "Luna", "Rahdika", "Rizki", "Nailah", "Noura", "Qobus", "Rayyan", "Salwa", "Shafira",
+    "Syifa", "Zahra"
+  ],
+  '12.3': [
+    "Aisyah N.", "Aisyah Z.", "Arum", "Azka", "Bunga", "Sela", "Chelin", "Faiha", "Faiza", "Fauzan",
+    "Ilham", "Jihan", "Saka", "Algi", "Afiq", "Zabran", "Ratu", "Safa", "Saskia", "Shyfa",
+    "Nabilah", "Tata", "Zia"
+  ],
+  '12.4': [
+    "Affan", "Aliyyah", "Nadyah", "Arief", "Bulan", "Dendy", "Dhia Salma", "Falih", "Hafsah", "Sami",
+    "Laisyah", "Marsya", "Abyan", "Izzun", "Faqih", "Farrel", "Rafif", "Nabilla", "Nailah", "Naofal",
+    "Agha", "Sigit", "Raisya", "Naya"
+  ],
+  '12.5': [
+    "Afifah", "Ahmed", "Nabil F.", "Acha", "Ality", "Anisa", "Aulia", "Chalesa", "Chaterine", "Fauzan",
+    "Ammar", "Raul", "Nabil M.", "Syaid", "Marchel", "Hafidz", "Bevis", "Isio", "Parrel", "Sheva",
+    "Naira", "Najihah", "Jinan", "Raviv"
+  ]
+};
+
 // ============ CardGrup Component ============
-const CardGrup = ({ no, anggota, shuffling = false, delay = 0 }) => {
+const CardGrup = ({ no, anggota, anggotaNames, shuffling = false, delay = 0 }) => {
   const [copied, setCopied] = useState(false);
 
   const fallbackCopyTextToClipboard = (text) => {
@@ -582,7 +611,7 @@ const CardGrup = ({ no, anggota, shuffling = false, delay = 0 }) => {
 
   const handleCopy = async () => {
     let text = `Grup ${no} : \n`;
-    text += (anggota || []).join(', ');
+    text += (anggotaNames && anggotaNames.length > 0 ? anggotaNames : anggota || []).join(', ');
     text += '\n';
     if (!text) return;
     try {
@@ -610,7 +639,6 @@ const CardGrup = ({ no, anggota, shuffling = false, delay = 0 }) => {
           <h5 className="mb-0">Grup {no}</h5>
           <small style={{ opacity: 0.9 }}>Anggota: {anggota?.length ?? 0}</small>
         </div>
-
         <button
           type="button"
           className="btn-copy"
@@ -620,13 +648,15 @@ const CardGrup = ({ no, anggota, shuffling = false, delay = 0 }) => {
           {copied ? '✓ Tersalin' : '📋 Salin'}
         </button>
       </header>
-
       <ul className="member-list">
         {(anggota && anggota.length > 0) ? (
-          anggota.map((member) => (
+          anggota.map((member, idx) => (
             <li key={member} className="member-item">
-              <span className="member-bubble">{member}</span>
-              <span className="member-text">Absen #{member}</span>
+              <span className="member-bubble">{anggotaNames && anggotaNames[idx] ? anggotaNames[idx] : member}</span>
+              <span className="member-text">
+                Absen #{member}
+                {anggotaNames && anggotaNames[idx] ? ` - ${anggotaNames[idx]}` : ''}
+              </span>
             </li>
           ))
         ) : (
@@ -638,7 +668,16 @@ const CardGrup = ({ no, anggota, shuffling = false, delay = 0 }) => {
 };
 
 // ============ GrupContainer Component ============
-const GrupContainer = ({ jmlhsiswa, jmlhgrup, shuffleKey, onChange, exclude = [] }) => {
+const GrupContainer = ({
+  jmlhsiswa,
+  jmlhgrup,
+  shuffleKey,
+  onChange,
+  exclude = [],
+  useKelas = false,
+  kelas = '',
+  daftarKelas = {}
+}) => {
   const [grup, setGrup] = useState([]);
   const [isShuffling, setIsShuffling] = useState(false);
 
@@ -686,6 +725,15 @@ const GrupContainer = ({ jmlhsiswa, jmlhgrup, shuffleKey, onChange, exclude = []
     return () => clearTimeout(t);
   }, [shuffleKey, jmlhgrup, jmlhsiswa]);
 
+  // Jika sistem kelas aktif, siapkan nama absen sesuai grup
+  let grupNames = [];
+  if (useKelas && kelas && daftarKelas[kelas]) {
+    const absenList = daftarKelas[kelas];
+    grupNames = grup.map(group =>
+      group.map(n => absenList[n - 1] ? absenList[n - 1] : n)
+    );
+  }
+
   if (!jmlhgrup || !jmlhsiswa) {
     return (
       <div className="empty-state">
@@ -714,30 +762,68 @@ const GrupContainer = ({ jmlhsiswa, jmlhgrup, shuffleKey, onChange, exclude = []
   return (
     <div className="grup-grid">
       {grup.map((group, i) => (
-        <CardGrup key={i} no={i + 1} anggota={group} shuffling={isShuffling} delay={i * 80} />
+        <CardGrup
+          key={i}
+          no={i + 1}
+          anggota={group}
+          anggotaNames={useKelas && grupNames[i] ? grupNames[i] : undefined}
+          shuffling={isShuffling}
+          delay={i * 80}
+        />
       ))}
     </div>
   );
 };
 
 // ============ InputForm Component ============
-const InputForm = ({ 
-  siswa, 
-  setSiswa, 
-  grup, 
-  setGrup, 
-  excludeInput, 
-  setExcludeInput, 
+const InputForm = ({
+  siswa,
+  setSiswa,
+  grup,
+  setGrup,
+  excludeInput,
+  setExcludeInput,
   excludeArr,
   error,
   hasilGrup,
   onSubmit,
-  onCopyAll 
+  onCopyAll,
+  useKelas,
+  setUseKelas,
+  kelas,
+  setKelas,
+  daftarKelas
 }) => {
   return (
     <div className="input-form">
       <h2 className="form-title">Input Data</h2>
-      
+      <div className="form-group" style={{ marginBottom: 16 }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={useKelas}
+            onChange={e => setUseKelas(e.target.checked)}
+            style={{ marginRight: 8 }}
+          />
+          Aktifkan Sistem Kelas
+        </label>
+      </div>
+      {useKelas && (
+        <div className="form-group">
+          <label htmlFor="kelas">Pilih Kelas</label>
+          <select
+            id="kelas"
+            className="form-input"
+            value={kelas}
+            onChange={e => setKelas(e.target.value)}
+          >
+            <option value="">-- Pilih Kelas --</option>
+            {Object.keys(daftarKelas).map(k => (
+              <option key={k} value={k}>{k}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="form-row">
         <div className="form-group">
           <label htmlFor="siswa">Jumlah Siswa</label>
@@ -750,16 +836,16 @@ const InputForm = ({
             value={siswa}
             onChange={(e) => {
               const val = e.target.value;
-              if (val === '') { 
-                setSiswa(''); 
-                return; 
+              if (val === '') {
+                setSiswa('');
+                return;
               }
               const n = Math.max(0, parseInt(val, 10) || 0);
               setSiswa(n);
             }}
+            disabled={useKelas && kelas}
           />
         </div>
-        
         <div className="form-group">
           <label htmlFor="group">Jumlah Grup</label>
           <input
@@ -771,9 +857,9 @@ const InputForm = ({
             value={grup}
             onChange={(e) => {
               const val = e.target.value;
-              if (val === '') { 
-                setGrup(''); 
-                return; 
+              if (val === '') {
+                setGrup('');
+                return;
               }
               const n = Math.max(0, parseInt(val, 10) || 0);
               setGrup(n);
@@ -781,7 +867,6 @@ const InputForm = ({
           />
         </div>
       </div>
-
       <div className="form-group">
         <label htmlFor="exclude">Exclude Nomor Absen (opsional)</label>
         <input
@@ -796,21 +881,22 @@ const InputForm = ({
           <small className="text-muted">Dikecualikan: {excludeArr.join(', ')}</small>
         )}
       </div>
-
       <button
         className="btn-primary"
         onClick={onSubmit}
-        disabled={!(Number(siswa) > 0 && Number(grup) > 0)}
+        disabled={
+          useKelas
+            ? !(kelas && grup > 0)
+            : !(Number(siswa) > 0 && Number(grup) > 0)
+        }
       >
         🎲 Shuffle Sekarang
       </button>
-
       {(hasilGrup && hasilGrup.length > 0) && (
         <button className="btn-secondary" onClick={onCopyAll}>
           📋 Copy Semua Grup
         </button>
       )}
-
       {error && (
         <div className="alert-error">
           {error}
@@ -831,6 +917,8 @@ const Content = () => {
   const [excludeArr, setExcludeArr] = useState([]);
   const [shuffleKey, setShuffleKey] = useState(0);
   const [hasilGrup, setHasilGrup] = useState([]);
+  const [useKelas, setUseKelas] = useState(false);
+  const [kelas, setKelas] = useState('');
 
   const parseExclude = (str, max) => {
     if (!str) return [];
@@ -852,8 +940,12 @@ const Content = () => {
   };
 
   const handleSubmit = () => {
-    const s = Number(siswa);
-    const g = Number(grup);
+    let s = Number(siswa);
+    let g = Number(grup);
+
+    if (useKelas && kelas && daftarKelas[kelas]) {
+      s = daftarKelas[kelas].length;
+    }
 
     if (!s || !g) {
       setError('Jumlah siswa dan grup harus lebih dari 0');
@@ -876,7 +968,16 @@ const Content = () => {
 
   const handleCopyAll = async () => {
     if (!hasilGrup || hasilGrup.length === 0) return;
-    const text = hasilGrup.map((g, i) => `Grup ${i + 1}: ${g.join(', ')}`).join('\n');
+    let text;
+    if (useKelas && kelas && daftarKelas[kelas]) {
+      text = hasilGrup.map((g, i) => {
+        const absenList = daftarKelas[kelas];
+        const names = g.map(n => absenList[n - 1] ? absenList[n - 1] : n);
+        return `Grup ${i + 1}: ${names.join(', ')}`;
+      }).join('\n');
+    } else {
+      text = hasilGrup.map((g, i) => `Grup ${i + 1}: ${g.join(', ')}`).join('\n');
+    }
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
@@ -911,9 +1012,13 @@ const Content = () => {
             hasilGrup={hasilGrup}
             onSubmit={handleSubmit}
             onCopyAll={handleCopyAll}
+            useKelas={useKelas}
+            setUseKelas={setUseKelas}
+            kelas={kelas}
+            setKelas={setKelas}
+            daftarKelas={daftarKelas}
           />
         </div>
-
         <div className="results-section">
           <GrupContainer
             jmlhgrup={fixGrup}
@@ -921,6 +1026,9 @@ const Content = () => {
             shuffleKey={shuffleKey}
             onChange={setHasilGrup}
             exclude={excludeArr}
+            useKelas={useKelas}
+            kelas={kelas}
+            daftarKelas={daftarKelas}
           />
         </div>
       </div>
